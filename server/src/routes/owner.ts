@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authorize, loadCafeAccess, verifyCafeAccess, createAuditLog } from '../middleware/auth.js';
 import { sanitizeString, validateAmount } from '../utils/validation.js';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 export const ownerRouter = Router();
 
 // Owner routes require CAFE_OWNER role + load their cafe access

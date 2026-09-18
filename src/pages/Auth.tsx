@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, ChevronLeft, ArrowRight, Shield } from 'lucide-react';
+import { Phone, ChevronLeft, Shield } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../api/client';
 import type { Page } from '../types';
@@ -37,18 +37,6 @@ export function AuthPage({ mode, onNavigate }: { mode: Page; onNavigate: (page: 
 
   const isRegister = mode === 'register';
 
-  // Demo mode: quick access buttons
-  const demoLogin = (role: 'CUSTOMER' | 'CAFE_OWNER' | 'CAFE_EMPLOYEE' | 'PLATFORM_ADMIN') => {
-    const demoUsers: Record<string, any> = {
-      CUSTOMER: { id: 'demo-cust-1', phone: '+998912345678', name: 'Sardor Karimov', role: 'CUSTOMER', isActive: true, createdAt: new Date().toISOString() },
-      CAFE_OWNER: { id: 'demo-owner-1', phone: '+998901112233', name: 'Artel Coffee', role: 'CAFE_OWNER', isActive: true, createdAt: new Date().toISOString() },
-      CAFE_EMPLOYEE: { id: 'demo-emp-1', phone: '+998904445566', name: 'Alisher (Xodim)', role: 'CAFE_EMPLOYEE', isActive: true, createdAt: new Date().toISOString() },
-      PLATFORM_ADMIN: { id: 'demo-admin-1', phone: '+998900000001', name: 'Platform Admin', role: 'PLATFORM_ADMIN', isActive: true, createdAt: new Date().toISOString() },
-    };
-    const user = demoUsers[role];
-    login('demo-token', user);
-  };
-
   const handleSendOTP = async () => {
     setError('');
     if (!validateUzPhone(phone)) {
@@ -67,6 +55,7 @@ export function AuthPage({ mode, onNavigate }: { mode: Page; onNavigate: (page: 
         setError(result.error);
       } else {
         setStep('otp');
+        // In dev mode, show the code for testing
         if (result.devCode) {
           setDevCode(result.devCode);
         }
@@ -139,27 +128,15 @@ export function AuthPage({ mode, onNavigate }: { mode: Page; onNavigate: (page: 
           }
         </p>
 
-        {/* Demo Quick Access */}
-        <div className="mb-6 p-4 bg-coffee-50 rounded-2xl border border-coffee-100">
-          <p className="text-xs font-medium text-coffee-700 mb-3 flex items-center gap-1">
-            <Shield className="w-3 h-3" />
-            Demo tez kirish (pilot rejim)
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button onClick={() => demoLogin('CUSTOMER')} className="py-2 text-xs font-medium bg-white rounded-xl text-coffee-700 border border-coffee-200 active:scale-95 transition-transform">
-              👤 Mijoz
-            </button>
-            <button onClick={() => demoLogin('CAFE_OWNER')} className="py-2 text-xs font-medium bg-white rounded-xl text-coffee-700 border border-coffee-200 active:scale-95 transition-transform">
-              🏪 Kafe egasi
-            </button>
-            <button onClick={() => demoLogin('CAFE_EMPLOYEE')} className="py-2 text-xs font-medium bg-white rounded-xl text-coffee-700 border border-coffee-200 active:scale-95 transition-transform">
-              🧑‍💼 Xodim
-            </button>
-            <button onClick={() => demoLogin('PLATFORM_ADMIN')} className="py-2 text-xs font-medium bg-white rounded-xl text-coffee-700 border border-coffee-200 active:scale-95 transition-transform">
-              ⚙️ Admin
-            </button>
+        {/* Dev mode indicator */}
+        {import.meta.env.DEV && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <p className="text-xs text-amber-700 flex items-center gap-1">
+              <Shield className="w-3 h-3" />
+              Development rejimi — Backend ulanmagan bo'lsa, demo ma'lumotlar ishlatiladi
+            </p>
           </div>
-        </div>
+        )}
 
         {step === 'phone' ? (
           <div className="space-y-4">

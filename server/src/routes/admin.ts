@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authorize, loadCafeAccess, createAuditLog } from '../middleware/auth.js';
 import { validatePhone, normalizePhone, sanitizeString } from '../utils/validation.js';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 export const adminRouter = Router();
 
 // All admin routes require PLATFORM_ADMIN role

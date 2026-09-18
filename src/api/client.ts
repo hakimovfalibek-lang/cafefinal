@@ -56,19 +56,29 @@ class ApiClient {
       const data = await response.json();
 
       if (!response.ok) {
-        // If 401, clear token
+        // If 401, clear token and redirect to login
         if (response.status === 401) {
           this.setToken(null);
+          // Trigger auth state update
+          window.dispatchEvent(new CustomEvent('cafepass:unauthorized'));
         }
-        return { error: data.error || 'Xatolik yuz berdi', ...data };
+        // If 403, unauthorized access
+        if (response.status === 403) {
+          return { error: data.error || 'Sizda bu bo\'limga kirish huquqi yo\'q', status: 403, ...data };
+        }
+        return { error: data.error || 'Xatolik yuz berdi', status: response.status, ...data };
       }
 
       return data;
     } catch (error) {
       console.error('API request failed:', error);
-      // Enable demo mode if backend is unavailable
-      this.isDemoMode = true;
-      return { error: 'Server bilan bog\'lanishda xatolik', isDemoMode: true };
+      // Only enable demo mode in development
+      if (import.meta.env.DEV) {
+        this.isDemoMode = true;
+        return { error: 'Server bilan bog\'lanishda xatolik', isDemoMode: true };
+      }
+      // In production, return error without demo mode
+      return { error: 'Server bilan bog\'lanishda xatolik. Iltimos, keyinroq urinib ko\'ring.' };
     }
   }
 

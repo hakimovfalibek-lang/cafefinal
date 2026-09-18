@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../index.js';
+import { prisma } from '../lib/prisma.js';
 import type { Role } from '@prisma/client';
 
 // Extend Express Request
@@ -14,7 +14,15 @@ declare global {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-production';
+// JWT_SECRET must be set in production
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (process.env.NODE_ENV === 'production' && !JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required in production');
+}
+
+// Fallback only for development
+const jwtSecret = JWT_SECRET || 'dev-secret-do-not-use-in-production';
 
 /**
  * Authentication middleware — validates JWT token
@@ -29,7 +37,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; role: Role };
+    const decoded = jwt.verify(token, jwtSecret) as { userId: string; role: Role };
     req.userId = decoded.userId;
     req.userRole = decoded.role;
     next();
@@ -114,7 +122,7 @@ export function verifyCafeAccess(paramName: string = 'cafeId') {
  * Generate JWT token
  */
 export function generateToken(userId: string, role: Role): string {
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ userId, role }, jwtSecret, { expiresIn: '7d' });
 }
 
 /**

@@ -143,14 +143,7 @@ export function generateOTP(): string {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-/**
- * Verify OTP code (simple comparison for dev; use bcrypt in production)
- */
-export function verifyOTPCode(inputCode: string, storedCode: string): boolean {
-  // In production, use bcrypt.compare(inputCode, storedCode)
-  // For now, direct comparison (dev mode stores plain text)
-  return inputCode === storedCode;
-}
+// verifyOTPCode removed - now using bcrypt.compare directly in auth routes
 
 /**
  * Send OTP via SMS

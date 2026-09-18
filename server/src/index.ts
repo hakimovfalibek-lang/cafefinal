@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
 import { authRouter } from './routes/auth.js';
 import { adminRouter } from './routes/admin.js';
@@ -10,11 +9,11 @@ import { ownerRouter } from './routes/owner.js';
 import { employeeRouter } from './routes/employee.js';
 import { customerRouter } from './routes/customer.js';
 import { authenticate } from './middleware/auth.js';
+import { prisma } from './lib/prisma.js';
 
 dotenv.config();
 
 const app = express();
-export const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
 // ============================================================

@@ -1,9 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authorize, createAuditLog } from '../middleware/auth.js';
 import crypto from 'crypto';
+import { authorize, createAuditLog } from '../middleware/auth.js';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 export const customerRouter = Router();
 
 // Customer routes require CUSTOMER role

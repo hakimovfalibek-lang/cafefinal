@@ -1,10 +1,9 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authorize, loadCafeAccess, createAuditLog } from '../middleware/auth.js';
 import { validateAmount } from '../utils/validation.js';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 export const employeeRouter = Router();
 
 // Employee routes require CAFE_EMPLOYEE role

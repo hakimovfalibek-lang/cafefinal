@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 import { generateToken, createAuditLog } from '../middleware/auth.js';
-import { sendOTP, verifyOTPCode, generateOTP } from '../services/sms.js';
+import { sendOTP, generateOTP } from '../services/sms.js';
 import { validatePhone, normalizePhone } from '../utils/validation.js';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 export const authRouter = Router();
 
 // ============================================================
@@ -83,12 +83,15 @@ authRouter.post('/send-otp', async (req: Request, res: Response) => {
     // Generate OTP
     const code = generateOTP();
 
+    // Hash OTP with bcrypt before storing
+    const hashedCode = await bcrypt.hash(code, 10);
+
     // Store hashed OTP
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
     await prisma.oTPVerification.create({
       data: {
         phone: normalizedPhone,
-        code, // In production, hash this with bcrypt
+        code: hashedCode, // Hashed with bcrypt
         expiresAt
       }
     });
@@ -168,8 +171,8 @@ authRouter.post('/verify-otp', async (req: Request, res: Response) => {
       return res.status(429).json({ error: 'Juda ko\'p noto\'g\'ri urinish. Qaytadan kod so\'rang.' });
     }
 
-    // Verify code
-    const isValid = verifyOTPCode(code, otp.code);
+    // Verify code with bcrypt comparison
+    const isValid = await bcrypt.compare(code, otp.code);
 
     if (!isValid) {
       await prisma.oTPVerification.update({
@@ -179,7 +182,7 @@ authRouter.post('/verify-otp', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Kod noto\'g\'ri.' });
     }
 
-    // Mark OTP as used
+    // Mark OTP as used (prevent replay)
     await prisma.oTPVerification.update({
       where: { id: otp.id },
       data: { 
