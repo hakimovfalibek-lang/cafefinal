@@ -14,7 +14,7 @@ import { authenticate } from './middleware/auth.js';
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
 // ============================================================
