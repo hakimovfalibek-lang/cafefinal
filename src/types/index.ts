@@ -1,42 +1,47 @@
-// CaféPass Type Definitions
+// CaféPass Type Definitions — Aligned with Backend Schema
+
+export type Role = 'PLATFORM_ADMIN' | 'CAFE_OWNER' | 'CAFE_EMPLOYEE' | 'CUSTOMER';
+export type CustomerLevel = 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+export type CafeStatus = 'ACTIVE' | 'SUSPENDED' | 'PENDING' | 'INACTIVE';
+export type LoyaltyTransactionType = 'EARN' | 'REDEEM' | 'BONUS' | 'EXPIRE' | 'ADJUST' | 'REVERSAL';
+export type RewardType = 'DISCOUNT' | 'FREE_ITEM' | 'GIFT';
+export type PromotionType = 'DOUBLE_POINTS' | 'DISCOUNT' | 'FREE_ITEM' | 'SPECIAL';
 
 export interface User {
   id: string;
   phone: string;
   name: string;
-  role: 'customer' | 'cafe_owner' | 'staff';
-  avatar?: string;
+  role: Role;
+  avatarUrl?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
-export interface Customer {
+export interface CustomerProfile {
   id: string;
   userId: string;
-  name: string;
-  phone: string;
   totalPoints: number;
   totalVisits: number;
   totalSpent: number;
-  favoriteCafes: string[];
-  joinedAt: string;
-  level: 'bronze' | 'silver' | 'gold' | 'platinum';
+  level: CustomerLevel;
+  user?: { name: string; phone: string };
 }
 
 export interface Cafe {
   id: string;
-  ownerId: string;
   name: string;
-  description: string;
+  description?: string;
   address: string;
   city: string;
   phone: string;
-  logo?: string;
-  coverImage?: string;
+  logoUrl?: string;
   workingHours: string;
-  loyaltyRate: number; // points per 1000 UZS
-  isActive: boolean;
-  createdAt: string;
-  branches: Branch[];
+  loyaltyRate: number;
+  status: CafeStatus;
+  branches?: Branch[];
+  rewards?: Reward[];
+  promotions?: Promotion[];
+  _count?: { purchases?: number; staff?: number };
 }
 
 export interface Branch {
@@ -44,69 +49,66 @@ export interface Branch {
   cafeId: string;
   name: string;
   address: string;
+  phone?: string;
   isActive: boolean;
 }
 
-export interface Staff {
+export interface CafeStaff {
   id: string;
-  cafeId: string;
-  branchId: string;
   userId: string;
-  name: string;
-  role: 'owner' | 'manager' | 'cashier';
+  cafeId: string;
+  branchId?: string;
+  role: Role;
   isActive: boolean;
+  user?: { name: string; phone: string };
+  cafe?: Cafe;
+  branch?: Branch;
 }
 
-export interface Order {
+export interface Purchase {
   id: string;
   customerId: string;
   cafeId: string;
-  branchId: string;
+  branchId?: string;
   amount: number;
   pointsEarned: number;
-  items: OrderItem[];
+  itemsJson: string;
   createdAt: string;
-  staffId?: string;
-}
-
-export interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
+  customer?: { user?: { name: string } };
 }
 
 export interface LoyaltyTransaction {
   id: string;
   customerId: string;
   cafeId: string;
-  branchId?: string;
-  type: 'earn' | 'redeem' | 'bonus' | 'expire' | 'adjust';
+  type: LoyaltyTransactionType;
   points: number;
+  balanceAfter: number;
   description: string;
-  orderId?: string;
-  rewardId?: string;
   createdAt: string;
-  performedBy?: string;
+  cafe?: { name: string };
+  customer?: { user?: { name: string } };
 }
 
 export interface Reward {
   id: string;
   cafeId: string;
   name: string;
-  description: string;
+  description?: string;
   pointsCost: number;
-  type: 'discount' | 'free_item' | 'gift';
+  type: RewardType;
   value?: number;
   isActive: boolean;
-  createdAt: string;
+  cafe?: { name: string };
+  canAfford?: boolean;
 }
 
 export interface Promotion {
   id: string;
   cafeId: string;
   title: string;
-  description: string;
-  type: 'double_points' | 'discount' | 'free_item' | 'special';
+  description?: string;
+  type: PromotionType;
   multiplier?: number;
   discountPercent?: number;
   startDate: string;
@@ -114,54 +116,41 @@ export interface Promotion {
   isActive: boolean;
 }
 
-export interface GiftCard {
-  id: string;
-  cafeId: string;
-  code: string;
-  balance: number;
-  originalAmount: number;
-  purchasedBy?: string;
-  redeemedBy?: string;
-  isActive: boolean;
-  createdAt: string;
-  expiresAt: string;
-}
-
 export interface QRSession {
-  id: string;
-  customerId: string;
   token: string;
   expiresAt: string;
-  usedAt?: string;
-  cafeId?: string;
+  expiresIn: number;
 }
 
-export interface AnalyticsData {
-  todayVisits: number;
-  todayRevenue: number;
-  totalCustomers: number;
-  totalOrders: number;
-  weeklyData: { day: string; visits: number; revenue: number }[];
-  topCustomers: { name: string; visits: number; spent: number }[];
-  popularItems: { name: string; count: number }[];
-}
-
-export type Page = 
+export type Page =
   | 'landing'
   | 'login'
   | 'register'
+  // Customer
   | 'customer-home'
   | 'customer-qr'
-  | 'customer-profile'
   | 'customer-cafes'
   | 'customer-cafe-detail'
   | 'customer-rewards'
   | 'customer-history'
-  | 'cafe-dashboard'
-  | 'cafe-customers'
-  | 'cafe-orders'
-  | 'cafe-analytics'
-  | 'cafe-rewards'
-  | 'cafe-promotions'
-  | 'cafe-scan'
-  | 'cafe-settings';
+  | 'customer-profile'
+  | 'customer-leaderboard'
+  // Owner
+  | 'owner-dashboard'
+  | 'owner-customers'
+  | 'owner-transactions'
+  | 'owner-rewards'
+  | 'owner-promotions'
+  | 'owner-analytics'
+  | 'owner-settings'
+  // Employee
+  | 'employee-dashboard'
+  | 'employee-scan'
+  | 'employee-purchase'
+  // Admin
+  | 'admin-dashboard'
+  | 'admin-cafes'
+  | 'admin-add-cafe'
+  | 'admin-customers'
+  | 'admin-analytics'
+  | 'admin-audit-logs';
