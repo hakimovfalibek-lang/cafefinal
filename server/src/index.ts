@@ -10,7 +10,7 @@ import { employeeRouter } from './routes/employee.js';
 import { customerRouter } from './routes/customer.js';
 import { authenticate } from './middleware/auth.js';
 import { prisma } from './lib/prisma.js';
-
+import path from 'path';
 dotenv.config();
 
 const app = express();
@@ -92,6 +92,7 @@ app.get('/api/me', authenticate, async (req, res) => {
   }
 });
 
+app.use(express.static(path.join(process.cwd(), 'dist')));
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint topilmadi' });
