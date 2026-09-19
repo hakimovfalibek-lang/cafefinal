@@ -5,12 +5,13 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy",
-    "prisma:studio": "prisma studio"
+      "dev": "vite",
+      "build": "vite build",
+      "postinstall": "npx prisma@5.22.0 generate --schema=server/prisma/schema.prisma",
+      "start": "node --import tsx/esm server/src/index.ts",
+      "typecheck": "tsc --noEmit",
+      "test": "vitest run",
+      "test:watch": "vitest"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
