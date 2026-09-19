@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "tsx server/src/index.ts",
+    "start": "npx tsx server/src/index.ts",
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
