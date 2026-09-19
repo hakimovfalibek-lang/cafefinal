@@ -7,7 +7,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postinstall": "node node_modules/prisma/build/index.js generate --schema=server/prisma/schema.prisma",
     "start": "node --import tsx/esm server/src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
