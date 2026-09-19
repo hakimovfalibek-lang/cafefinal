@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postinstall": "npx prisma generate --schema=server/prisma/schema.prisma",
     "start": "node --import tsx/esm server/src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
