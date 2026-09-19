@@ -3,8 +3,7 @@
  * Communicates with the backend API
  * Falls back to demo mode when backend is unavailable
  */
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://cafefinal-1.onrender.com/api';
 
 interface ApiResponse<T = any> {
   success?: boolean;
