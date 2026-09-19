@@ -86,7 +86,7 @@ class ApiClient {
   // ============================================================
 
   async sendOTP(phone: string) {
-    return this.request('/auth/send-otp', {
+    return this.request('/api/auth/send-otp', {
       method: 'POST',
       body: JSON.stringify({ phone }),
     });
