@@ -6,7 +6,7 @@ Pilot: Namangan, O'zbekiston
 
 ---
 
-## 🏗 Architecture
+## 🏗 Arxitektura
 
 ```
 ┌─────────────────┐     ┌─────────────────────┐     ┌──────────────┐
@@ -22,62 +22,186 @@ Pilot: Namangan, O'zbekiston
                         └─────────────────┘
 ```
 
-## 📁 Project Structure
+## 📁 Loyiha Tuzilishi
 
 ```
 cafepass/
 ├── src/                    # Frontend (React + TypeScript + Tailwind)
 │   ├── api/               # API client
 │   ├── contexts/          # Auth context
-│   ├── pages/             # Page components by role
-│   │   ├── Landing.tsx
+│   ├── pages/             # Sahifalar
+│   │   ├── Landing.tsx    # Landing sahifa
 │   │   ├── Auth.tsx       # OTP login/register
-│   │   ├── CustomerPages.tsx
-│   │   ├── OwnerPages.tsx
-│   │   ├── EmployeePages.tsx
-│   │   └── AdminPages.tsx
-│   ├── types/             # TypeScript types
+│   │   ├── CustomerPages.tsx  # Mijoz paneli
+│   │   ├── OwnerPages.tsx     # Kafe egasi paneli
+│   │   ├── EmployeePages.tsx  # Xodim paneli
+│   │   └── AdminPages.tsx     # Admin paneli
+│   ├── types/             # TypeScript turlari
 │   └── index.css          # Tailwind + custom styles
 ├── server/                 # Backend (Express + Prisma)
 │   ├── src/
-│   │   ├── index.ts       # Express app entry
+│   │   ├── index.ts       # Express app
+│   │   ├── lib/           # Shared utilities (prisma singleton)
 │   │   ├── middleware/    # Auth, RBAC middleware
-│   │   ├── routes/        # API routes by role
-│   │   ├── services/      # SMS, loyalty services
-│   │   └── utils/         # Validation utilities
+│   │   ├── routes/        # API routes
+│   │   ├── services/      # SMS service
+│   │   └── utils/         # Validation
 │   ├── prisma/
 │   │   └── schema.prisma  # Database schema
-│   └── .env.example
+│   └── scripts/
+│       └── seed-dev.ts    # Development test accounts
+├── tests/                  # Automated tests
 ├── render.yaml            # Render deployment config
-└── .env.example           # Frontend env config
+└── .env.example           # Environment variables
 ```
 
-## 🔐 Roles & Permissions
+## 🔐 Rollar
 
-| Role | Access |
-|------|--------|
-| **CUSTOMER** | Dashboard, QR, cafés, rewards, history, leaderboard |
-| **CAFE_EMPLOYEE** | Scan QR, process purchases, redeem rewards |
-| **CAFE_OWNER** | Full café management, analytics, staff, rewards, promotions |
-| **PLATFORM_ADMIN** | Create/manage cafés, assign owners, platform analytics, audit logs |
+| Rol | Kirish |
+|-----|--------|
+| **CUSTOMER** | Dashboard, QR, kafelar, sovg'alar, tarix, reyting |
+| **CAFE_EMPLOYEE** | QR skanerlash, sotuv qayd etish, sovg'a berish |
+| **CAFE_OWNER** | Kafe boshqaruvi, analitika, xodimlar, sovg'alar |
+| **PLATFORM_ADMIN** | Kafe yaratish, egalar tayinlash, platforma analitika |
 
-## 🚀 Quick Start
+## 🚀 Ishga Tushirish
 
-### Frontend
-```bash
-npm install
-npm run dev
-```
+### 1. Backend
 
-### Backend
 ```bash
 cd server
+
+# Dependencies o'rnatish
 npm install
+
+# .env fayl yaratish
 cp .env.example .env
-# Edit .env with your database URL and secrets
+
+# .env faylni tahrirlash:
+# DATABASE_URL=postgresql://user:pass@host:5432/cafepass
+# JWT_SECRET=<openssl rand -base64 32>
+# SMS_PROVIDER=eskiz
+# ESKIZ_EMAIL=your@email.com
+# ESKIZ_PASSWORD=your-password
+
+# Database migrations
 npx prisma migrate dev
+
+# Development test accountlar yaratish
+npx tsx scripts/seed-dev.ts
+
+# Server ishga tushirish
 npm run dev
 ```
+
+### 2. Frontend
+
+```bash
+# Root papkada
+npm install
+
+# .env fayl yaratish
+cp .env.example .env
+# VITE_API_URL=http://localhost:3001/api
+
+# Development server
+npm run dev
+```
+
+### 3. Testlar
+
+```bash
+# Barcha testlarni ishga tushirish
+npm run test
+
+# Watch mode
+npm run test:watch
+```
+
+## 📱 Foydalanuvchi Oqimlari
+
+### Mijoz
+1. Telefon raqam → OTP → Ro'yxatdan o'tish
+2. Dashboard → Ball, daraja, statistika
+3. QR kod → 60 soniyada yangilanadi
+4. Kafe → Xodim QR skanerlaydi
+5. Sotuv → Ball beriladi
+6. Sovg'a → Ballni almashtirish
+
+### Xodim
+1. Login → Dashboard
+2. Mijoz QR tokenini kiritish
+3. Mijoz ma'lumotlarini ko'rish
+4. Sotuv summasini kiritish
+5. Ball hisoblash va qayd etish
+
+### Kafe Egasi
+1. Login → Dashboard
+2. Statistika: tashriflar, tushum, mijozlar
+3. Xodimlar boshqaruvi
+4. Sovg'alar va aksiyalar
+5. Analitika
+
+### Admin
+1. Login → Platforma dashboard
+2. Yangi kafe qo'shish (kafe + filial + ega)
+3. Barcha kafelarni boshqarish
+4. Audit loglar
+
+## 🗄 Database Schema
+
+Asosiy jadvallar:
+- **User** — Autentifikatsiya, rollar
+- **CustomerProfile** — Ball, daraja, statistika
+- **Cafe** — Kafe ma'lumotlari
+- **CafeBranch** — Filiallar
+- **CafeStaff** — Xodimlar (ega/xodim)
+- **Purchase** — Sotuvlar
+- **LoyaltyTransaction** — Ball tranzaksiyalari (ledger)
+- **Reward** — Sovg'alar
+- **RewardRedemption** — Sovg'a almashtirish
+- **Promotion** — Aksiyalar
+- **QRSession** — QR tokenlar (60s, bir martalik)
+- **AuditLog** — Harakatlar jurnali
+
+## 🔒 Xavfsizlik
+
+- ✅ JWT autentifikatsiya (7 kun)
+- ✅ bcrypt OTP hash
+- ✅ Role-based access control (backend)
+- ✅ Tenant isolation (kafe A ↔ kafe B)
+- ✅ QR token 60s, bir martalik
+- ✅ Rate limiting (100 req/15min, auth 10/15min)
+- ✅ Server-side validation
+- ✅ Audit logging
+- ✅ Helmet.js security headers
+- ✅ CORS configuration
+
+## 📊 Testlar
+
+Testlar mavjud:
+- `tests/validation.test.ts` — Telefon validatsiya
+- `tests/auth.test.ts` — JWT autentifikatsiya
+- `tests/otp-security.test.ts` — OTP bcrypt hash/verify
+- `tests/loyalty.test.ts` — Ball hisoblash
+- `tests/tenant-isolation.test.ts` — RBAC va tenant isolation
+- `tests/qr-security.test.ts` — QR token xavfsizlik
+
+Testlarni ishga tushirish:
+```bash
+npm run test
+```
+
+## 🌍 Deployment (Render)
+
+```yaml
+Services:
+- cafepass-api (Node.js backend)
+- cafepass-frontend (Static site)
+- cafepass-db (PostgreSQL)
+```
+
+`render.yaml` fayli tayyor.
 
 ## 🔑 Environment Variables
 
@@ -91,104 +215,61 @@ VITE_API_URL=http://localhost:3001/api
 NODE_ENV=development
 PORT=3001
 DATABASE_URL=postgresql://user:pass@localhost:5432/cafepass
-JWT_SECRET=your-strong-secret-here
+JWT_SECRET=<strong-random-string>
 FRONTEND_URL=http://localhost:3000
-SMS_PROVIDER=dev  # or 'eskiz' for production
+SMS_PROVIDER=dev  # yoki 'eskiz' production uchun
 ESKIZ_EMAIL=your@email.com
 ESKIZ_PASSWORD=your-password
 ```
 
-## 📱 User Flows
+## 📈 Pilot Ko'rsatkichlari
 
-### Customer
-1. Register with phone → Receive OTP via SMS → Verify
-2. View dashboard with points, level, progress
-3. Generate QR code (refreshes every 60s)
-4. Visit café → Employee scans QR → Purchase processed → Points earned
-5. Redeem rewards at partner cafés
-6. View transaction history, leaderboard
-
-### Employee
-1. Login → Dashboard with today's stats
-2. Scan customer QR → Identify customer
-3. Enter purchase amount → Points calculated → Transaction recorded
-4. Process reward redemptions
-
-### Café Owner
-1. Login → Full dashboard with analytics
-2. View customers, transactions, revenue
-3. Manage rewards, promotions, branches, employees
-4. Weekly/monthly analytics
-
-### Platform Admin
-1. Login → Platform overview
-2. Add new café (creates café + branch + owner account)
-3. Manage all cafés, view platform analytics
-4. Audit logs for all important actions
-
-## 🗄 Database Schema
-
-Key entities:
-- **User** — Authentication, roles
-- **CustomerProfile** — Points, level, stats (denormalized from transactions)
-- **Cafe** — Multi-tenant café with loyalty rate
-- **CafeBranch** — Multiple locations per café
-- **CafeStaff** — Owner/employee assignments
-- **Purchase** — Transaction records
-- **LoyaltyTransaction** — Traceable ledger (source of truth for points)
-- **Reward** — Available rewards per café
-- **RewardRedemption** — Redemption records
-- **Promotion** — Time-limited offers
-- **QRSession** — Short-lived secure tokens
-- **AuditLog** — Platform action tracking
-
-## 🔒 Security
-
-- JWT-based authentication with 7-day expiry
-- Role-based access control enforced on backend
-- Tenant isolation: cafés can only access their own data
-- Short-lived QR tokens (60s expiry)
-- OTP rate limiting (3/hour per phone)
-- Phone number validation (Uzbekistan format)
-- Audit logging for important actions
-- Helmet.js security headers
-- CORS configuration
-- Rate limiting on all API endpoints
-
-## 📊 SMS OTP Integration
-
-**Provider:** Eskiz.uz (Uzbekistan SMS gateway)
-
-**Flow:**
-1. User enters phone → Backend validates format
-2. Backend generates 4-digit OTP → Stores hash
-3. SMS sent via Eskiz API
-4. User enters OTP → Backend verifies
-5. On success: User created/updated → JWT issued
-
-**Development mode:** OTP logged to console (no SMS sent)
-
-## 🌍 Deployment (Render)
-
-```yaml
-Services:
-- cafepass-api (Node.js backend)
-- cafepass-frontend (Static site)
-- cafepass-db (PostgreSQL)
-```
-
-See `render.yaml` for full configuration.
-
-## 📈 Pilot Metrics
-
-Track during pilot:
-- Active cafés onboarded
-- Active customers registered
-- Repeat visits per customer
-- Loyalty redemptions
-- Average revenue per café
-- Customer retention rate
+Pilot davrida kuzatish:
+- Faol kafelar soni
+- Ro'yxatdan o'tgan mijozlar
+- Takroriy tashriflar
+- Sovg'a almashtirishlar
+- O'rtacha tushum
+- Mijozlarni saqlash darajasi
 
 ---
 
-**Built for Namangan cafés. Designed for Uzbekistan. Ready for scale.**
+**Namangan kafelari uchun yaratilgan. O'zbekiston uchun mo'ljallangan. Masshtablashga tayyor.**
+
+## 🛠 Development Test Accountlar
+
+Seed script ishga tushirilgandan keyin:
+
+| Rol | Telefon | Tavsif |
+|-----|---------|--------|
+| Admin | +998901111111 | Platform administrator |
+| Owner | +998902222222 | Kafe egasi (Artel Coffee) |
+| Employee | +998903333333 | Xodim |
+| Customer | +998904444444 | Mijoz (500 ball) |
+
+**Eslatma:** Test accountlar faqat development muhitida ishlaydi. Production'da haqiqiy OTP autentifikatsiya ishlatiladi.
+
+## ✅ Tekshirilgan Funksiyalar
+
+- ✅ OTP autentifikatsiya (bcrypt hash)
+- ✅ JWT session boshqaruvi
+- ✅ Role-based routing
+- ✅ QR token generatsiya (60s, bir martalik)
+- ✅ QR skanerlash va mijozni aniqlash
+- ✅ Sotuv qayd etish va ball berish
+- ✅ Tenant isolation
+- ✅ Loyalty transaction ledger
+- ✅ Audit logging
+- ✅ Rate limiting
+- ✅ Error handling
+
+## ⚠️ Ma'lum
+
+- PostgreSQL database kerak
+- SMS provider credentials kerak (production uchun)
+- JWT_SECRET production value kerak
+- Prisma migrations ishga tushirish kerak
+
+---
+
+**Loyiha tayyor. Infrastructure kerak.**

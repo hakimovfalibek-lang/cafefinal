@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Coffee, QrCode, User, MapPin, Gift, Clock, TrendingUp, Home, Award, History, ChevronLeft, ChevronRight, Heart, Crown, ShoppingBag, Eye, Sparkles, Star, LogOut, Trophy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { api } from '../api/client';
 import type { Page } from '../types';
 
 // Demo data for when API is unavailable
@@ -164,21 +165,51 @@ function CustomerHome({ onNavigate }: { onNavigate: (page: Page) => void }) {
 }
 
 // ============================================================
-// CUSTOMER QR
+// CUSTOMER QR - Real API Integration
 // ============================================================
 function CustomerQR({ onNavigate }: { onNavigate: (page: Page) => void }) {
   const { user } = useAuth();
   const [timeLeft, setTimeLeft] = useState(60);
+  const [qrToken, setQrToken] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(prev => prev > 0 ? prev - 1 : 60), 1000);
+    generateQR();
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          generateQR(); // Auto-refresh when expired
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const generateQR = async () => {
+    try {
+      setLoading(true);
+      const result = await api.generateQR();
+      if (result.token) {
+        setQrToken(result.token);
+        setTimeLeft(result.expiresIn || 60);
+      } else if (result.error) {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError('QR kod yaratishda xatolik');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const generateQRPattern = () => {
     const size = 21;
     const pattern: boolean[][] = [];
-    const seed = timeLeft;
+    // Use token as seed for visual pattern
+    const seed = qrToken ? qrToken.charCodeAt(0) + timeLeft : timeLeft;
     for (let i = 0; i < size; i++) {
       pattern[i] = [];
       for (let j = 0; j < size; j++) {
@@ -225,6 +256,21 @@ function CustomerQR({ onNavigate }: { onNavigate: (page: Page) => void }) {
         </div>
         <p className="text-xs text-espresso-500 mt-2">Kod har 60 soniyada yangilanadi</p>
       </div>
+      
+      {/* QR Token - for dev testing */}
+      {qrToken && (
+        <div className="mt-4 p-3 bg-white/5 rounded-xl max-w-xs">
+          <p className="text-xs text-espresso-400 mb-1">QR Token (dev):</p>
+          <p className="text-xs text-white font-mono break-all">{qrToken}</p>
+          <button 
+            onClick={() => navigator.clipboard.writeText(qrToken)}
+            className="mt-2 text-xs text-coffee-400 hover:text-coffee-300"
+          >
+            📋 Nusxa olish
+          </button>
+        </div>
+      )}
+      
       <div className="mt-6 text-center">
         <p className="text-lg font-semibold text-white">{user?.name || 'Sardor Karimov'}</p>
       </div>
