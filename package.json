@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx prisma generate && vite build",
+    "build": "npx prisma generate --schema=server/prisma/schema.prisma && vite build",
     "start": "node --import tsx/esm server/src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
